@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
+    <title>Minuteur d'Entraînement</title>
+    
+    <!-- PWA Configuration pour iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Minuteur Pro">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <!-- Icône alternative si icon.png n'existe pas -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23667eea' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>⏱️</text></svg>">
+    
+    <!-- Manifest pour PWA -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: -webkit-fill-available;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            user-select: none;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .timer-display {
+            font-size: 6rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .timer-display:active {
+            transform: scale(0.98);
+        }
+
+        .status {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            opacity: 0.9;
+        }
+
+        .series-counter {
+            font-size: 2rem;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .time-input {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 0.8rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .instruction {
+            margin-top: 2rem;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .wake-lock-status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏱️ Minuteur d'Entraînement</h1>
+        
+        <div class="time-input">
+            <div>
+                <label>Minutes:</label>
+                <input type="number" id="minutesInput" value="1" min="0" max="99">
+            </div>
+            <div>
+                <label>Secondes:</label>
+                <input type="number" id="secondsInput" value="0" min="0" max="59">
+            </div>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">01:00</div>
+        
+        <div class="status" id="status">Prêt à démarrer</div>
+        
+        <div class="series-counter">
+            Séries complétées: <span id="seriesCount">0</span>
+        </div>
+
+        <div class="controls">
+            <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
+        </div>
+
+        <div class="instruction">
+            Double-cliquez sur le temps pour démarrer/pause
+        </div>
+        
+        <div class="wake-lock-status" id="wakeLockStatus"></div>
+    </div>
+
+    <script>
+        let timeLeft = 60;
+        let totalTime = 60;
+        let isRunning = false;
+        let interval = null;
+        let seriesCount = 0;
+        let wakeLock = null;
+        let startTime = null;
+        let pausedTime = 0;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const status = document.getElementById('status');
+        const seriesCountDisplay = document.getElementById('seriesCount');
+        const minutesInput = document.getElementById('minutesInput');
+        const secondsInput = document.getElementById('secondsInput');
+        const wakeLockStatus = document.getElementById('wakeLockStatus');
+
+        // Wake Lock pour empêcher le téléphone de se mettre en veille
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLockStatus.textContent = '🔓 Écran maintenu actif';
+                    
+                    wakeLock.addEventListener('release', () => {
+                        wakeLockStatus.textContent = '🔒 Verrouillage écran relâché';
+                    });
+                }
+            } catch (err) {
+                wakeLockStatus.textContent = '⚠️ Wake Lock non supporté';
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // Réacquérir le Wake Lock si la page devient visible
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+
+        // Vibration
+        function vibrate(pattern) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // Bip sonore amélioré
+        function playBeep() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playThreeBeeps() {
+            // Bips sonores
+            playBeep();
+            setTimeout(() => playBeep(), 400);
+            setTimeout(() => playBeep(), 800);
+            
+            // Vibrations longues
+            vibrate([300, 100, 300, 100, 300]);
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateTimeFromInputs() {
+            if (!isRunning) {
+                const minutes = parseInt(minutesInput.value) || 0;
+                const seconds = parseInt(secondsInput.value) || 0;
+                totalTime = minutes * 60 + seconds;
+                timeLeft = totalTime;
+                updateDisplay();
+            }
+        }
+
+        minutesInput.addEventListener('change', updateTimeFromInputs);
+        secondsInput.addEventListener('change', updateTimeFromInputs);
+
+        function startTimer() {
+            isRunning = true;
+            status.textContent = '🏃 En cours...';
+            requestWakeLock();
+            
+            // Utiliser le temps réel pour éviter les dérives
+            startTime = Date.now() - pausedTime;
+            
+            interval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeLeft = totalTime - elapsed;
+                
+                if (timeLeft < 0) {
+                    timeLeft = 0;
+                }
+                
+                updateDisplay();
+                
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    playThreeBeeps();
+                    seriesCount++;
+                    seriesCountDisplay.textContent = seriesCount;
+                    status.textContent = '✅ Série terminée!';
+                    releaseWakeLock();
+                    
+                    setTimeout(() => {
+                        timeLeft = totalTime;
+                        pausedTime = 0;
+                        updateDisplay();
+                        status.textContent = 'Prêt pour la prochaine série';
+                    }, 2000);
+                }
+            }, 100); // Mise à jour plus fréquente pour plus de précision
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(interval);
+            releaseWakeLock();
+            
+            if (timeLeft > 0) {
+                pausedTime = (totalTime - timeLeft) * 1000;
+                status.textContent = '⏸️ En pause';
+            }
+        }
+
+        function toggleTimer() {
+            // Interaction utilisateur nécessaire pour l'audio
+            if (isRunning) {
+                stopTimer();
+            } else {
+                updateTimeFromInputs();
+                startTimer();
+            }
+        }
+
+        function resetAll() {
+            stopTimer();
+            seriesCount = 0;
+            seriesCountDisplay.textContent = seriesCount;
+            pausedTime = 0;
+            updateTimeFromInputs();
+            status.textContent = 'Prêt à démarrer';
+        }
+
+        // Double-clic sur le timer
+        timerDisplay.addEventListener('dblclick', toggleTimer);
+
+        // Initialisation
+        updateDisplay();
+    </script>
+</body>
+</html>
