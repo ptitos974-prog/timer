@@ -232,6 +232,19 @@
             }
         });
 
+        // AudioContext global - doit être initialisé par une interaction utilisateur
+        let audioContext = null;
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Reprendre le contexte s'il est suspendu (Safari)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
         // Vibration
         function vibrate(pattern) {
             if ('vibrate' in navigator) {
@@ -239,32 +252,40 @@
             }
         }
 
-        // Bip sonore amélioré
-        function playBeep() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Bip sonore optimisé pour Safari iOS
+        function playBeep(delay = 0) {
+            if (!audioContext) return;
+            
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.value = 800;
+            oscillator.frequency.value = 880; // Note A5
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            const startTime = audioContext.currentTime + delay;
+            const duration = 0.2;
             
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
         }
 
         function playThreeBeeps() {
-            // Bips sonores
-            playBeep();
-            setTimeout(() => playBeep(), 400);
-            setTimeout(() => playBeep(), 800);
+            // Initialiser le contexte audio
+            initAudioContext();
             
-            // Vibrations longues
+            // Bips sonores avec délais
+            playBeep(0);
+            playBeep(0.3);
+            playBeep(0.6);
+            
+            // Vibrations longues (ne fonctionne pas sur iOS Safari malheureusement)
             vibrate([300, 100, 300, 100, 300]);
         }
 
@@ -335,7 +356,9 @@
         }
 
         function toggleTimer() {
-            // Interaction utilisateur nécessaire pour l'audio
+            // Initialiser l'audio au premier clic (requis par Safari)
+            initAudioContext();
+            
             if (isRunning) {
                 stopTimer();
             } else {
