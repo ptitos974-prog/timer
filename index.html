@@ -93,6 +93,7 @@
             gap: 1rem;
             justify-content: center;
             margin-top: 2rem;
+            flex-wrap: wrap;
         }
 
         .time-input {
@@ -137,6 +138,11 @@
             background: #ff6b6b;
             color: white;
         }
+        
+        .test-btn {
+            background: #4ecdc4;
+            color: white;
+        }
 
         .instruction {
             margin-top: 2rem;
@@ -175,6 +181,7 @@
         </div>
 
         <div class="controls">
+            <button class="test-btn" onclick="testSound()">🔊 Test Son</button>
             <button class="reset-btn" onclick="resetAll()">🔄 Reset</button>
         </div>
 
@@ -232,34 +239,47 @@
             }
         });
 
-        // AudioContext global - doit être initialisé par une interaction utilisateur
+        // AudioContext global
         let audioContext = null;
         let audioInitialized = false;
 
-        // Créer des éléments audio HTML (méthode la plus fiable pour iOS)
-        const beepSound = new Audio();
-        beepSound.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGm98OScTgwOUKjo77RgGgU7k9r0y3kjBSl+zPLaizsIHGS56+mjUBELTKXn8bllHAU2jdXzzn0pBSd6yPDckTsIF2G16+mjTxEJS6Xm8bllHAU1jdT0z3woBSh8yPDckjsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkTsIF2G16+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXo8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsI';
-
         function initAudioContext() {
             if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('AudioContext créé, état:', audioContext.state);
+                } catch (e) {
+                    console.error('Erreur création AudioContext:', e);
+                    return false;
+                }
             }
             if (audioContext.state === 'suspended') {
-                audioContext.resume();
+                audioContext.resume().then(() => {
+                    console.log('AudioContext repris');
+                }).catch(e => {
+                    console.error('Erreur resume:', e);
+                });
             }
             audioInitialized = true;
+            return true;
         }
 
         // Vibration
         function vibrate(pattern) {
             if ('vibrate' in navigator) {
-                navigator.vibrate(pattern);
+                const result = navigator.vibrate(pattern);
+                console.log('Vibration appelée:', result);
+            } else {
+                console.log('API Vibration non supportée');
             }
         }
 
-        // Méthode 1: Bip avec Web Audio API
-        function playBeepWebAudio(delay = 0) {
-            if (!audioContext || !audioInitialized) return;
+        // Bip avec Web Audio API - simplifié et debuggé
+        function playBeep(frequency = 880, duration = 0.2, delay = 0) {
+            if (!audioContext || !audioInitialized) {
+                console.log('AudioContext non initialisé');
+                return;
+            }
             
             try {
                 const oscillator = audioContext.createOscillator();
@@ -268,50 +288,53 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                oscillator.frequency.value = 880;
+                oscillator.frequency.value = frequency;
                 oscillator.type = 'sine';
                 
                 const startTime = audioContext.currentTime + delay;
-                const duration = 0.2;
                 
-                gainNode.gain.setValueAtTime(0, startTime);
-                gainNode.gain.linearRampToValueAtTime(0.5, startTime + 0.01);
+                gainNode.gain.setValueAtTime(0.3, startTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
                 
                 oscillator.start(startTime);
                 oscillator.stop(startTime + duration);
+                
+                console.log('Bip joué à', startTime, 'fréquence:', frequency);
             } catch (e) {
-                console.log('Web Audio failed:', e);
+                console.error('Erreur playBeep:', e);
             }
         }
 
-        // Méthode 2: Bip avec Audio element (plus fiable sur iOS)
-        function playBeepAudioElement() {
-            try {
-                const audio = beepSound.cloneNode();
-                audio.volume = 0.5;
-                audio.play().catch(e => console.log('Audio play failed:', e));
-            } catch (e) {
-                console.log('Audio element failed:', e);
+        // Fonction de test
+        function testSound() {
+            console.log('=== TEST SON ===');
+            const success = initAudioContext();
+            if (!success) {
+                alert('Impossible d\'initialiser l\'audio');
+                return;
             }
+            
+            console.log('État AudioContext:', audioContext.state);
+            playBeep(880, 0.3, 0);
+            vibrate(300);
+            
+            status.textContent = '🔊 Test son joué !';
+            setTimeout(() => {
+                if (timeLeft === totalTime && !isRunning) {
+                    status.textContent = 'Prêt à démarrer';
+                }
+            }, 2000);
         }
 
-        // Fonction principale pour jouer 3 bips
+        // Fonction pour jouer 3 bips
         function playThreeBeeps() {
+            console.log('=== TROIS BIPS ===');
             initAudioContext();
             
-            // Essayer les deux méthodes pour maximiser les chances
-            // Méthode Audio Element (plus fiable sur iOS)
-            playBeepAudioElement();
-            setTimeout(() => playBeepAudioElement(), 300);
-            setTimeout(() => playBeepAudioElement(), 600);
+            playBeep(880, 0.2, 0);
+            playBeep(880, 0.2, 0.3);
+            playBeep(880, 0.2, 0.6);
             
-            // Méthode Web Audio API (backup)
-            playBeepWebAudio(0);
-            playBeepWebAudio(0.3);
-            playBeepWebAudio(0.6);
-            
-            // Vibrations
             vibrate([300, 100, 300, 100, 300]);
         }
 
