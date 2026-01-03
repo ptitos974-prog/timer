@@ -208,10 +208,10 @@
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLockStatus.textContent = '🔓 Écran maintenu actif';
+                    wakeLockStatus.textContent = '🔒 Écran maintenu actif';
                     
                     wakeLock.addEventListener('release', () => {
-                        wakeLockStatus.textContent = '🔒 Verrouillage écran relâché';
+                        wakeLockStatus.textContent = '🔓 Verrouillage écran relâché';
                     });
                 }
             } catch (err) {
@@ -256,7 +256,7 @@
             if (notificationPermission && 'Notification' in window) {
                 try {
                     const notification = new Notification('⏱️ Minuteur Terminé!', {
-                        body: `Série ${seriesCount + 1} terminée! 💪`,
+                        body: `Série ${seriesCount} terminée! 💪`,
                         icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23667eea" width="100" height="100" rx="20"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">⏱️</text></svg>',
                         badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23667eea" width="100" height="100" rx="20"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">⏱️</text></svg>',
                         tag: 'timer-complete',
@@ -407,6 +407,11 @@
             }
             
             isRunning = true;
+            
+            // Incrémenter la série au démarrage
+            seriesCount++;
+            seriesCountDisplay.textContent = seriesCount;
+            
             status.textContent = '🏃 En cours...';
             requestWakeLock();
             
@@ -425,9 +430,7 @@
                 
                 if (timeLeft <= 0) {
                     stopTimer();
-                    sendNotification(); // Utiliser la notification au lieu de playThreeBeeps directement
-                    seriesCount++;
-                    seriesCountDisplay.textContent = seriesCount;
+                    sendNotification();
                     status.textContent = '✅ Série terminée!';
                     releaseWakeLock();
                     
@@ -438,7 +441,7 @@
                         status.textContent = 'Prêt pour la prochaine série';
                     }, 2000);
                 }
-            }, 100); // Mise à jour plus fréquente pour plus de précision
+            }, 100);
         }
 
         function stopTimer() {
