@@ -46,6 +46,7 @@
             top: 0;
             left: 0;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            cursor: pointer;
         }
 
         .container {
@@ -65,7 +66,6 @@
             font-weight: bold;
             margin: 2rem 0;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
-            cursor: pointer;
             transition: transform 0.1s;
         }
 
@@ -111,6 +111,7 @@
             border-radius: 10px;
             text-align: center;
             background: rgba(255,255,255,0.9);
+            cursor: text;
         }
 
         button {
@@ -179,7 +180,7 @@
         </div>
 
         <div class="instruction">
-            Double-cliquez sur le temps pour démarrer/pause<br>
+            Touchez l'écran pour démarrer/pause<br>
             <small style="opacity: 0.7;">Une notification vous alertera à la fin (autorisez les notifications)</small>
         </div>
         
@@ -279,7 +280,7 @@
 
         // Créer des éléments audio HTML (méthode la plus fiable pour iOS)
         const beepSound = new Audio();
-        beepSound.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGm98OScTgwOUKjo77RgGgU7k9r0y3kjBSl+zPLaizsIHGS56+mjUBELTKXn8bllHAU2jdXzzn0pBSd6yPDckTsIF2G16+mjTxEJS6Xm8bllHAU1jdT0z3woBSh8yPDckjsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkTsIF2G16+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXo8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsI';
+        beepSound.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGm98OScTgwOUKjo77RgGgU7k9r0y3kjBSl+zPLaizsIHGS56+mjUBELTKXn8bllHAU2jdXzzn0pBSd6yPDckTsIF2G16+mjTxEJS6Xm8bllHAU1jdT0z3woBSh8yPDckjsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkTsIF2G16+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXo8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKS6Xm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8bllHAU1jdT0z3woBSh8yPDdkTsIF2O56+mjUBEKTKXn8bllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsIF2O56+mjUBEKTKXn8rllHAU3jdXzzn0pBSh6yPDdkjsIF2G26+ijTxEKTKXm8rllHAU1jtT0z3woBSh7yPDdkTsI';
 
         function initAudioContext() {
             if (!audioContext) {
@@ -476,15 +477,13 @@
             status.textContent = 'Prêt à démarrer';
         }
 
-        // Double-clic sur le timer
-        timerDisplay.addEventListener('dblclick', toggleTimer);
-
-        // Initialiser l'audio dès le chargement de la page avec un geste utilisateur
-        document.body.addEventListener('click', function initOnFirstClick() {
-            if (!audioInitialized) {
-                initAudioContext();
+        // Clic n'importe où sur l'écran pour démarrer/pause
+        document.body.addEventListener('click', function(e) {
+            // Ne pas déclencher si on clique sur un input ou button
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+                toggleTimer();
             }
-        }, { once: false });
+        });
 
         // Initialisation
         updateDisplay();
