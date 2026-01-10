@@ -409,9 +409,11 @@
             
             isRunning = true;
             
-            // Incrémenter la série au démarrage
-            seriesCount++;
-            seriesCountDisplay.textContent = seriesCount;
+            // Incrémenter la série seulement si on démarre un nouveau cycle (pas en reprise de pause)
+            if (pausedTime === 0) {
+                seriesCount++;
+                seriesCountDisplay.textContent = seriesCount;
+            }
             
             status.textContent = '🏃 En cours...';
             requestWakeLock();
