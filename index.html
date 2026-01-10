@@ -180,7 +180,7 @@
         </div>
 
         <div class="instruction">
-            Touchez l'écran pour démarrer/pause<br>
+            Double-cliquez sur l'écran pour démarrer/pause<br>
             <small style="opacity: 0.7;">Une notification vous alertera à la fin (autorisez les notifications)</small>
         </div>
         
@@ -477,8 +477,8 @@
             status.textContent = 'Prêt à démarrer';
         }
 
-        // Clic n'importe où sur l'écran pour démarrer/pause
-        document.body.addEventListener('click', function(e) {
+        // Double-clic n'importe où sur l'écran pour démarrer/pause
+        document.body.addEventListener('dblclick', function(e) {
             // Ne pas déclencher si on clique sur un input ou button
             if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
                 toggleTimer();
